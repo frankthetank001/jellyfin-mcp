@@ -319,3 +319,7 @@ Beyond tools, jellyfin-mcp implements several MCP protocol features that compati
 ## License
 
 [MIT](LICENSE)
+
+## AI Discolsure
+
+This project was made with the help of AI tools, but with a lot of manual effort towards SDK compliance, usability, and minimal slop. 

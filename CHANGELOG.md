@@ -1,5 +1,11 @@
 # Changelog
 
+## v2026.603.1
+
+### Fixed
+
+- **`jellyfin_play`**: send playback parameters as query parameters instead of a JSON request body. Jellyfin's `POST /Sessions/{id}/Playing` endpoint requires `playCommand` and `itemIds` as query params, so every play request previously failed with `400 — The playCommand field is required`. Playback now starts correctly. Thanks @perk11 for the fix (#2).
+
 ## v2026.318.7 — Initial release
 
 - 31 tools across 8 toolsets: discovery, media, user, playback, admin, content, livetv, analytics

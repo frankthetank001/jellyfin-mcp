@@ -220,16 +220,18 @@ func RegisterPlaybackTools(server *mcp.Server, client jf.Client, enabled func(st
 				playCmd = "PlayNow"
 			}
 
-			body := map[string]any{
-				"ItemIds":     args.ItemIDs,
-				"PlayCommand": playCmd,
+			params := url.Values{
+				"PlayCommand": {playCmd},
+			}
+			for _, itemID := range args.ItemIDs {
+				params.Add("ItemIds", itemID)
 			}
 			if args.StartIndex != nil {
-				body["StartIndex"] = *args.StartIndex
+				params.Set("StartIndex", fmt.Sprintf("%d", *args.StartIndex))
 			}
-
 			endpoint := fmt.Sprintf("/Sessions/%s/Playing", jf.SanitizeID(args.SessionID))
-			if err := client.PostNoContent(ctx, endpoint, nil, body); err != nil {
+
+			if err := client.PostNoContent(ctx, endpoint, params, nil); err != nil {
 				return jf.ErrResult("Failed to start playback: %v. Verify the session_id is valid using jellyfin_sessions.", err), nil, nil
 			}
 			return jf.TextResult(fmt.Sprintf("Playback started: %d items queued with command '%s'.", len(args.ItemIDs), playCmd)), nil, nil

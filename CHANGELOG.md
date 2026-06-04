@@ -1,5 +1,15 @@
 # Changelog
 
+## v2026.604.1
+
+### Added
+
+- **Docker support**: official multi-arch image (`linux/amd64`, `linux/arm64`) published to `ghcr.io/jaredtrent/jellyfin-mcp`, with a hardened `Dockerfile` and `docker-compose.yml`. See the Docker section of the README. Closes #1.
+
+### Fixed
+
+- Corrected `--http` / `--http-token` flag syntax (double dashes) in documentation and startup error messages.
+
 ## v2026.603.1
 
 ### Fixed

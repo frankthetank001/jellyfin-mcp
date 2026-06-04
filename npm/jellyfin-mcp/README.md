@@ -17,7 +17,7 @@ Add to your MCP client config:
       "command": "npx",
       "args": ["-y", "@jaredtrent/jellyfin-mcp"],
       "env": {
-        "JELLYFIN_URL": "https://jellyfin_host:8920",
+        "JELLYFIN_URL": "http://YOUR_SERVER:8096",
         "JELLYFIN_API_KEY": "your_api_key"
       }
     }
@@ -25,7 +25,7 @@ Add to your MCP client config:
 }
 ```
 
-Replace `JELLYFIN_URL` with your Jellyfin server address and `JELLYFIN_API_KEY` with an API key from your Jellyfin dashboard (**Administration > Dashboard > API Keys**).
+Replace `JELLYFIN_URL` with your Jellyfin server address and `JELLYFIN_API_KEY` with an API key from your Jellyfin dashboard (**Dashboard > Advanced > API Keys**).
 
 <details>
 <summary>Claude Desktop</summary>
@@ -39,7 +39,7 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
       "command": "npx",
       "args": ["-y", "@jaredtrent/jellyfin-mcp"],
       "env": {
-        "JELLYFIN_URL": "https://jellyfin_host:8920",
+        "JELLYFIN_URL": "http://YOUR_SERVER:8096",
         "JELLYFIN_API_KEY": "your_api_key"
       }
     }
@@ -55,7 +55,7 @@ Restart Claude Desktop after saving.
 
 ```sh
 claude mcp add \
-  -e JELLYFIN_URL=https://jellyfin_host:8920 \
+  -e JELLYFIN_URL=http://YOUR_SERVER:8096 \
   -e JELLYFIN_API_KEY=your_api_key \
   jellyfin -- npx -y @jaredtrent/jellyfin-mcp
 ```
@@ -78,7 +78,7 @@ Any client that supports the `mcpServers` JSON format (Cursor, VS Code Copilot, 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `JELLYFIN_API_KEY` | Yes | — | API key from your Jellyfin dashboard |
-| `JELLYFIN_URL` | No | `https://jellyfin_host:8920` | Jellyfin server URL |
+| `JELLYFIN_URL` | No | — | Server URL, e.g. `http://YOUR_SERVER:8096` (or `https://YOUR_SERVER:8920` if HTTPS is enabled) |
 | `JELLYFIN_USER_ID` | No | auto-detected | User ID for user-scoped operations |
 
 ## CLI flags
@@ -86,14 +86,14 @@ Any client that supports the `mcpServers` JSON format (Cursor, VS Code Copilot, 
 Append flags after the package name in the `args` array:
 
 ```json
-"args": ["-y", "@jaredtrent/jellyfin-mcp", "-read-only", "-toolsets", "discovery,media,playback"]
+"args": ["-y", "@jaredtrent/jellyfin-mcp", "--read-only", "--toolsets", "discovery,media,playback"]
 ```
 
 | Flag | Description |
 |------|-------------|
-| `-toolsets` | Comma-separated groups: `discovery`, `media`, `user`, `playback`, `admin`, `content`, `analytics`, `livetv` |
-| `-read-only` | Only register read-only tools |
-| `-disable-destructive` | Skip destructive tools (delete, restart, shutdown) |
+| `--toolsets` | Comma-separated groups: `discovery`, `media`, `user`, `playback`, `admin`, `content`, `analytics`, `livetv` |
+| `--read-only` | Only register read-only tools |
+| `--disable-destructive` | Skip destructive tools (delete, restart, shutdown) |
 
 ## Tools (31)
 
@@ -191,8 +191,8 @@ Pre-built multi-step workflows: `find-and-play`, `resume-watching`, `whats-new`,
 ## Safety
 
 - Destructive operations require explicit `confirm=true` — the AI is instructed to ask first
-- `-read-only` and `-disable-destructive` flags for restricted environments
-- `-toolsets` to expose only the tool groups you need
+- `--read-only` and `--disable-destructive` flags for restricted environments
+- `--toolsets` to expose only the tool groups you need
 
 ## Platform
 

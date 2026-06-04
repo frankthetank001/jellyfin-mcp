@@ -148,10 +148,10 @@ func runHTTP(server *mcp.Server, addr, token string) {
 	}()
 
 	if token == "" && !strings.HasPrefix(addr, "127.0.0.1") && !strings.HasPrefix(addr, "localhost") {
-		log.Fatalf("FATAL: -http-token is required when listening on non-localhost address %s", addr)
+		log.Fatalf("FATAL: --http-token is required when listening on non-localhost address %s", addr)
 	}
 	if token == "" {
-		log.Printf("WARNING: HTTP mode without -http-token — MCP endpoint has no authentication (localhost only)")
+		log.Printf("WARNING: HTTP mode without --http-token — MCP endpoint has no authentication (localhost only)")
 	}
 	log.Printf("Jellyfin MCP server listening on %s (HTTP)", addr)
 	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {

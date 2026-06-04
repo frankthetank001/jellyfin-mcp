@@ -1,6 +1,6 @@
 # Tools
 
-31 tools organized into 8 toolsets. Enable specific toolsets with `-toolsets discovery,media,...` or restrict access with `-read-only` and `-disable-destructive`.
+31 tools organized into 8 toolsets. Enable specific toolsets with `--toolsets discovery,media,...` or restrict access with `--read-only` and `--disable-destructive`.
 
 ## discovery
 

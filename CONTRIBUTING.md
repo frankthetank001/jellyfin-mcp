@@ -50,7 +50,7 @@ Or in HTTP mode:
 
 ```sh
 source .env
-./build/jellyfin-mcp -http
+./build/jellyfin-mcp --http
 # Server at http://127.0.0.1:8080/mcp
 ```
 

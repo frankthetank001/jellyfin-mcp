@@ -23,7 +23,7 @@ What you expected to happen.
 - Install method: binary / go install / go run / npx
 
 **Relevant flags**
-List any flags you're using (e.g., `-read-only`, `-toolsets discovery,media`, `-http`).
+List any flags you're using (e.g., `--read-only`, `--toolsets discovery,media`, `--http`).
 
 **Logs or error output**
 Paste any relevant error messages or logs (stderr output from jellyfin-mcp).

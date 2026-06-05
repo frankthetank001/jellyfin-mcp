@@ -126,8 +126,13 @@ func runHTTP(server *mcp.Server, addr, token string) {
 		},
 	)
 
+	// Defense-in-depth against cross-site tool execution (CVE-2026-33252): reject
+	// browser cross-site POSTs by checking Origin / Sec-Fetch-Site. Non-browser
+	// clients (MetaMCP, curl) send neither header and pass through unaffected.
+	crossOrigin := http.NewCrossOriginProtection()
+
 	mux := http.NewServeMux()
-	mux.Handle("/mcp", bearerAuth(handler, token))
+	mux.Handle("/mcp", bearerAuth(crossOrigin.Handler(handler), token))
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`{"status":"ok"}`))

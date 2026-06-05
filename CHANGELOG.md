@@ -1,5 +1,19 @@
 # Changelog
 
+## v2026.604.2
+
+### Security
+
+- Update `github.com/modelcontextprotocol/go-sdk` to 1.6.1 (and `jsonschema-go` to 0.4.3), resolving two high-severity advisories:
+  - **GHSA-q382-vc8q-7jhj** — improper handling of null Unicode characters during JSON parsing (pulls patched `segmentio/encoding` v0.5.4).
+  - **CVE-2026-33252 / GHSA-89xv-2j6f-qhc8** — cross-site tool execution on the Streamable HTTP transport. 1.6.1 enforces `Content-Type: application/json` on POST and enables DNS-rebinding protection by default.
+- Wrap the `/mcp` handler with `net/http` cross-origin protection so Origin / `Sec-Fetch-Site` is verified even in no-token localhost mode. Non-browser clients (MetaMCP, curl) are unaffected; browser cross-site POSTs are rejected with 403.
+
+### Changed
+
+- Bump Docker base images to `golang:1.26.4-alpine` (build) and `alpine:3.23` (runtime).
+- Bump CI GitHub Actions to current majors (Node 24 runtime): `checkout` v6, `setup-go` v6, `setup-qemu` v4, `setup-buildx` v4, `login` v4, `build-push` v7, `metadata` v6.
+
 ## v2026.604.1
 
 ### Added

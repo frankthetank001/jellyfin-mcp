@@ -36,8 +36,5 @@ Thumbs.db
 .claude/
 CLAUDE.md
 
-# README backup (full version with unverified client configs)
-README.full.md
-
 # Internal release docs
 RELEASING.md

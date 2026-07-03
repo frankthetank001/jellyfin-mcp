@@ -301,7 +301,7 @@ type VideosInput struct {
 // --- Analytics ---
 
 type AnalyticsInput struct {
-	Action   string `json:"action" jsonschema:"Action: library_stats (counts by type), library_size (total storage by type), size_report (rank individual items or series by total storage size — defaults to Series), codec_report (codec/resolution distribution), never_played (unplayed items), recently_added (items added within N days), duplicate_check (items with same name and year), played_status (per-user played/unplayed status for an item — requires item_id)"`
+	Action   string `json:"action" jsonschema:"Action: library_stats (counts by type), library_size (total storage by type), size_report (rank individual items or series by total storage size — defaults to Series), codec_report (codec/resolution distribution), never_played (unplayed items), recently_added (items added within N days), duplicate_check (items with same name and year), played_status (per-user played/unplayed status for an item — requires item_id), cleanup_candidates (unwatched items ranked by disk size — the ready-made 'what can I delete to free space' list; joins never_played with sizes server-side, defaults to Movie)"`
 	ItemID   string `json:"item_id,omitempty" jsonschema:"Item ID for played_status (series, movie, or other item — get from search or browse)"`
 	ParentID string `json:"parent_id,omitempty" jsonschema:"Library ID to scope results (get from jellyfin_libraries)"`
 	Type     string `json:"type,omitempty" jsonschema:"Item type filter: Movie, Series, Episode, Audio, MusicAlbum"`

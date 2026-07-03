@@ -21,7 +21,7 @@ func RegisterAnalyticsTools(server *mcp.Server, client jf.Client, enabled func(s
 			Name:  "jellyfin_analytics",
 			Title: "Analytics",
 			InputSchema: jf.WithEnums[jf.AnalyticsInput](map[string][]any{
-				"action": {"library_stats", "library_size", "size_report", "codec_report", "never_played", "recently_added", "duplicate_check", "played_status"},
+				"action": {"library_stats", "library_size", "size_report", "codec_report", "never_played", "recently_added", "duplicate_check", "played_status", "cleanup_candidates"},
 			}),
 			Description: "Library analytics and reports. All actions are read-only. Use parent_id to scope to a specific library.",
 			Annotations: AnnotReadOnly,
@@ -660,8 +660,116 @@ func RegisterAnalyticsTools(server *mcp.Server, client jf.Client, enabled func(s
 				}
 				return jf.TextResult(fmt.Sprintf("Size report — top %d %s:\n\n%s", len(results), label, jf.FormatJSON(results))), &jf.AnalyticsOutput{SizeReport: sizeEntries}, nil
 
+			case "cleanup_candidates":
+				// Unwatched items ranked by disk size — the "what can I delete to
+				// free space" answer, joined IN CODE (never_played ∩ size) so no
+				// model has to cross-reference opaque IDs across two lists.
+				itemType := args.Type
+				if itemType == "" {
+					itemType = "Movie"
+				}
+				limit := jf.ClampInt(args.Limit, 50, jf.MaxLimitCap)
+
+				type cand struct {
+					Name  string
+					ID    string
+					Type  string
+					Bytes int64
+					Files int
+				}
+				cands := make([]*cand, 0, 128)
+				pageSize := 500
+				startIndex := 0
+				pageNum := 0
+				for {
+					pageNum++
+					jf.ReportProgress(ctx, req, float64(pageNum-1), 0, fmt.Sprintf("Scanning unplayed %s page %d...", itemType, pageNum))
+					params := url.Values{
+						"IsPlayed":         {"false"},
+						"IncludeItemTypes": {itemType},
+						"Recursive":        {"true"},
+						"Limit":            {fmt.Sprintf("%d", pageSize)},
+						"StartIndex":       {fmt.Sprintf("%d", startIndex)},
+						"Fields":           {"MediaSources"},
+					}
+					if args.ParentID != "" {
+						params.Set("ParentId", args.ParentID)
+					}
+					endpoint := fmt.Sprintf("/Users/%s/Items", jf.SanitizeID(userID))
+					var result map[string]any
+					if err := client.Get(ctx, endpoint, params, &result); err != nil {
+						return jf.ErrResult("Jellyfin API error: %v", err), nil, nil
+					}
+					rawItems := jf.ToSlice(result["Items"])
+					if len(rawItems) == 0 {
+						break
+					}
+					for _, raw := range rawItems {
+						m := jf.ToMap(raw)
+						var bytes int64
+						files := 0
+						for _, src := range jf.ToSlice(m["MediaSources"]) {
+							sm := jf.ToMap(src)
+							if sz := jf.GetInt64(sm, "Size"); sz > 0 {
+								bytes += sz
+								files++
+							}
+						}
+						if bytes == 0 {
+							continue
+						}
+						cands = append(cands, &cand{
+							Name:  jf.GetString(m, "Name"),
+							ID:    jf.GetString(m, "Id"),
+							Type:  jf.GetString(m, "Type"),
+							Bytes: bytes,
+							Files: files,
+						})
+					}
+					totalRecords := jf.GetInt(result, "TotalRecordCount")
+					startIndex += len(rawItems)
+					if startIndex >= totalRecords {
+						break
+					}
+				}
+
+				sort.Slice(cands, func(i, j int) bool {
+					return cands[i].Bytes > cands[j].Bytes
+				})
+				unwatchedTotal := len(cands)
+				if len(cands) > limit {
+					cands = cands[:limit]
+				}
+
+				results := make([]map[string]any, 0, len(cands))
+				sizeEntries := make([]jf.SizeEntry, 0, len(cands))
+				var shownBytes int64
+				for _, e := range cands {
+					gb := fmt.Sprintf("%.2f", float64(e.Bytes)/float64(jf.BytesPerGB))
+					results = append(results, map[string]any{
+						"name":    e.Name,
+						"id":      e.ID,
+						"type":    e.Type,
+						"files":   e.Files,
+						"size_gb": gb,
+						"size_mb": e.Bytes / jf.BytesPerMB,
+					})
+					sizeEntries = append(sizeEntries, jf.SizeEntry{
+						Name:   e.Name,
+						ID:     e.ID,
+						Type:   e.Type,
+						Files:  e.Files,
+						SizeGB: gb,
+						SizeMB: e.Bytes / jf.BytesPerMB,
+					})
+					shownBytes += e.Bytes
+				}
+				msg := fmt.Sprintf("Unwatched %s ranked by size — safe deletion candidates (%d unwatched with files; showing top %d, %.1f GB):\n\n%s",
+					itemType, unwatchedTotal, len(results), float64(shownBytes)/float64(jf.BytesPerGB), jf.FormatJSON(results))
+				return jf.TextResult(msg), &jf.AnalyticsOutput{SizeReport: sizeEntries}, nil
+
 			default:
-				return jf.ErrResult("Invalid action '%s'. Valid actions: library_stats, codec_report, never_played, recently_added, duplicate_check, library_size, size_report, played_status", args.Action), nil, nil
+				return jf.ErrResult("Invalid action '%s'. Valid actions: library_stats, codec_report, never_played, recently_added, duplicate_check, library_size, size_report, played_status, cleanup_candidates", args.Action), nil, nil
 			}
 		})
 	}
